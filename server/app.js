@@ -80,11 +80,8 @@ app.post('/links',
 
 app.post('/signup',
   (req, res, next) => {
-    // var url = req.body.url;
-    // console.log(req.body.username, req.body.password);
 
     if (!req.body.username || !req.body.password) {
-      // send back a 404 if link is not valid
       return res.sendStatus(404);
     }
 
@@ -95,38 +92,53 @@ app.post('/signup',
 
     return models.Users.get(options)
       .then(user => {//check if link already exists; if exists, then throw link
-        console.log(user);
         if (user) {
           throw user;
         }
         return user;
-        // models.Users.getUrlTitle(url);
       })
       .then(user => {
-        console.log('hello');
         return models.Users.create(options);
 
       })
       .then(result => {
-        // res.redirect('/');
-        res.end();
+        res.redirect('/');
       })
       .catch(user => {
         res.redirect('/signup');
-        // res.status(200).end(user);
       });
-    //   .then(results => {
-    //     return models.Links.get({ id: results.insertId });
-    //   })
-    //   .then(link => {
-    //     throw link;
-    //   })
-    //   .error(error => {
-    //     res.status(500).send(error);
-    //   })
-    //   .catch(link => {
-    //     res.status(200).send(link);
-    //   });
+
+  });
+
+app.post('/login',
+  (req, res, next) => {
+    if (!req.body.username || !req.body.password) {
+      return res.sendStatus(404);
+    }
+    var options = {
+      username: req.body.username
+    };
+    return models.Users.get(options)
+      .then(data => {
+        if (!data) {
+          throw data;
+        }
+        return data;
+      })
+      .then(data => {
+        return models.Users.compare(req.body.password, data.password, data.salt);
+
+      })
+      .then(bool => {
+        if (!bool) {
+          throw bool;
+        } 
+        res.redirect('/');
+      })
+      .catch(user => {
+        res.redirect('/login');
+      });
+
   });
 
 /************************************************************/
