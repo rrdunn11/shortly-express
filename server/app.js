@@ -82,11 +82,11 @@ app.post('/links',
 
 app.post('/signup',
   (req, res, next) => {
+    console.log(req.session)
 
     if (!req.body.username || !req.body.password) {
       return res.sendStatus(404);
     }
-
     var options = {
       username: req.body.username,
       password: req.body.password
@@ -97,13 +97,13 @@ app.post('/signup',
         if (user) {
           throw user;
         }
-        return user;
-      })
-      .then(user => {
         return models.Users.create(options);
-
       })
       .then(result => {
+        return models.Sessions.update({hash: req.session.hash}, {userId: result.insertId})
+      })
+      .then(result => {
+        console.log(result)
         res.redirect('/');
       })
       .catch(user => {
@@ -125,16 +125,12 @@ app.post('/login',
         if (!data) {
           throw data;
         }
-        return data;
-      })
-      .then(data => {
         return models.Users.compare(req.body.password, data.password, data.salt);
-
       })
       .then(bool => {
         if (!bool) {
           throw bool;
-        } 
+        }
         res.redirect('/');
       })
       .catch(user => {
